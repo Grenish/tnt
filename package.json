@@ -1,20 +1,45 @@
 {
-  "name": "tnt",
-  "module": "index.ts",
+  "name": "@grenishrai/tnt",
+  "version": "1.0.0",
+  "description": "Tiny Node Tooling — A lightweight version control system",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
+  "main": "./dist/index.js",
   "bin": {
     "tnt": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "bun src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node"
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "vcs",
+    "version-control",
+    "git",
+    "cli",
+    "tool"
+  ],
+  "author": "grenishrai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grenishrai/tnt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grenishrai/tnt/issues"
+  },
+  "homepage": "https://github.com/grenishrai/tnt#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20"
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "version": "1.0.0"
+  }
 }
