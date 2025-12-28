@@ -1,6 +1,6 @@
 {
   "name": "@grenishrai/tnt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tiny Node Tooling — A lightweight version control system",
   "type": "module",
   "main": "./dist/index.js",
