@@ -9,6 +9,10 @@
   "bin": {
     "tnt": "./dist/index.js"
   },
+  "scripts": {
+    "dev": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target node"
+  },
   "peerDependencies": {
     "typescript": "^5"
   }
