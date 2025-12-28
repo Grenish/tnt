@@ -27,10 +27,13 @@ const commands: Record<string, { desc: string; usage: string }> = {
   merge: { desc: "Merge branches", usage: "tnt -m <target> -u <upcoming>" },
   migrate: { desc: "Migrate to Git", usage: "tnt migrate -git" },
   shell: { desc: "Open interactive shell", usage: "tnt shell" },
+  upgrade: { desc: "Check for updates", usage: "tnt upgrade" },
   help: { desc: "Show help", usage: "tnt help [command]" },
 };
 
 const flags: Record<string, string> = {
+  "-v, --version": "Show version",
+  "-h, --help": "Show help",
   "-c": "Create branch",
   "-co": "Checkout branch",
   "-cnc": "Create and checkout branch",
@@ -52,7 +55,7 @@ function printGeneralHelp() {
 
   console.log(`\n${BOLD}Flags:${RESET}`);
   for (const [flag, desc] of Object.entries(flags)) {
-    console.log(`  ${YELLOW}${flag.padEnd(10)}${RESET} ${DIM}${desc}${RESET}`);
+    console.log(`  ${YELLOW}${flag.padEnd(14)}${RESET} ${DIM}${desc}${RESET}`);
   }
 
   console.log(
