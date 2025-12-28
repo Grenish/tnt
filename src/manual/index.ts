@@ -9,3 +9,5 @@ export { manual as merge } from "./merge";
 export { manual as migrate } from "./migrate";
 export { manual as shell } from "./shell";
 export { manual as help } from "./help";
+export { manual as version } from "./version";
+export { manual as upgrade } from "./upgrade";
