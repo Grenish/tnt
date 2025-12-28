@@ -21,6 +21,16 @@ export function parseArgs(argv: string[]): {
     return { action: "migrate", target: second };
   }
 
+  // Handle upgrade command
+  if (first === "upgrade") {
+    return { action: "upgrade" };
+  }
+
+  // Handle version command
+  if (first === "version") {
+    return { action: "version" };
+  }
+
   return {
     action: first ?? "help",
     target: second,
@@ -73,6 +83,14 @@ function parseFlag(
 
     case "-m":
       return parseMergeArgs(allArgs || []);
+
+    case "-v":
+    case "--version":
+      return { action: "version" };
+
+    case "-h":
+    case "--help":
+      return { action: "help", target };
 
     default:
       return { action: "help" };
