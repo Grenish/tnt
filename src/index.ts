@@ -12,6 +12,8 @@ import { migrate } from "./commands/migrate";
 import { shell } from "./commands/shell";
 import { merge } from "./commands/merge";
 import { help } from "./commands/help";
+import { version } from "./commands/version";
+import { upgrade } from "./commands/upgrade";
 
 const { action, target, mergeTarget, mergeUpcoming } = parseArgs(process.argv);
 
@@ -68,6 +70,14 @@ switch (action) {
 
   case "help":
     help(target);
+    break;
+
+  case "version":
+    version();
+    break;
+
+  case "upgrade":
+    upgrade();
     break;
 
   default:
