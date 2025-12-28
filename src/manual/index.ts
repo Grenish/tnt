@@ -1,0 +1,11 @@
+export { manual as init } from "./init";
+export { manual as stage } from "./stage";
+export { manual as summ } from "./summ";
+export { manual as stats } from "./stats";
+export { manual as branch } from "./branch";
+export { manual as checkout } from "./checkout";
+export { manual as log } from "./log";
+export { manual as merge } from "./merge";
+export { manual as migrate } from "./migrate";
+export { manual as shell } from "./shell";
+export { manual as help } from "./help";
