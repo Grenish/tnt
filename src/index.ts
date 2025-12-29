@@ -5,7 +5,7 @@ import { init } from "./commands/init";
 import { stage } from "./commands/stage";
 import { summ } from "./commands/summ";
 import { stats } from "./commands/stats";
-import { branch } from "./commands/branch";
+import { branch, deleteBranch } from "./commands/branch";
 import { checkout } from "./commands/checkout";
 import { log } from "./commands/log";
 import { migrate } from "./commands/migrate";
@@ -14,8 +14,13 @@ import { merge } from "./commands/merge";
 import { help } from "./commands/help";
 import { version } from "./commands/version";
 import { upgrade } from "./commands/upgrade";
+import { blast } from "./commands/blast";
+import { list } from "./commands/list";
+import { track } from "./commands/track";
 
-const { action, target, mergeTarget, mergeUpcoming } = parseArgs(process.argv);
+const { action, target, args, mergeTarget, mergeUpcoming } = parseArgs(
+  process.argv,
+);
 
 switch (action) {
   case "init":
@@ -68,6 +73,10 @@ switch (action) {
     checkout(target);
     break;
 
+  case "delete-branch":
+    deleteBranch(target);
+    break;
+
   case "help":
     help(target);
     break;
@@ -78,6 +87,18 @@ switch (action) {
 
   case "upgrade":
     upgrade();
+    break;
+
+  case "blast":
+    blast(target);
+    break;
+
+  case "list":
+    list(args);
+    break;
+
+  case "track":
+    track();
     break;
 
   default:
