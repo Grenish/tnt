@@ -23,9 +23,13 @@ const commands: Record<string, { desc: string; usage: string }> = {
   stats: { desc: "Show repository status", usage: "tnt stats" },
   branch: { desc: "List or create branches", usage: "tnt branch [name]" },
   checkout: { desc: "Switch branches", usage: "tnt checkout <branch>" },
+  delete: { desc: "Delete a branch", usage: "tnt delete <branch>" },
   log: { desc: "Show commit history", usage: "tnt log" },
+  ls: { desc: "List all snapshots", usage: "tnt ls [-v] [-n <count>] [id]" },
+  track: { desc: "Show all files with status", usage: "tnt track" },
   merge: { desc: "Merge branches", usage: "tnt -m <target> -u <upcoming>" },
   migrate: { desc: "Migrate to Git", usage: "tnt migrate -git" },
+  blast: { desc: "Remove all TNT configuration", usage: "tnt blast --confirm" },
   shell: { desc: "Open interactive shell", usage: "tnt shell" },
   upgrade: { desc: "Check for updates", usage: "tnt upgrade" },
   help: { desc: "Show help", usage: "tnt help [command]" },
@@ -37,6 +41,7 @@ const flags: Record<string, string> = {
   "-c": "Create branch",
   "-co": "Checkout branch",
   "-cnc": "Create and checkout branch",
+  "-d": "Delete branch",
   "-m -u": "Merge branches",
 };
 
