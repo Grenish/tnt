@@ -1,6 +1,7 @@
 export function parseArgs(argv: string[]): {
   action: string;
   target?: string;
+  args?: string[];
   mergeTarget?: string;
   mergeUpcoming?: string;
 } {
@@ -29,6 +30,16 @@ export function parseArgs(argv: string[]): {
   // Handle version command
   if (first === "version") {
     return { action: "version" };
+  }
+
+  // Handle delete command
+  if (first === "delete") {
+    return { action: "delete-branch", target: second };
+  }
+
+  // Handle ls/list command with additional args
+  if (first === "ls" || first === "list") {
+    return { action: "list", args: args.slice(1) };
   }
 
   return {
@@ -68,6 +79,7 @@ function parseFlag(
 ): {
   action: string;
   target?: string;
+  args?: string[];
   mergeTarget?: string;
   mergeUpcoming?: string;
 } {
@@ -80,6 +92,9 @@ function parseFlag(
 
     case "-cnc":
       return { action: "branch-create-checkout", target };
+
+    case "-d":
+      return { action: "delete-branch", target };
 
     case "-m":
       return parseMergeArgs(allArgs || []);
