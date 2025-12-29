@@ -23,19 +23,34 @@ TNT is a fun side project that implements a simple version control system from s
 - 📁 **Repository initialization** with `.tnt` directory structure
 - 📝 **File staging** with content-addressed blob storage
 - 💾 **Commits** with SHA-based hashing and parent tracking
-- 🌿 **Branching** — create and switch between branches
+- 🌿 **Branching** — create, switch, and delete branches
 - 🔀 **Merging** — simple version-based merge strategy
 - 📊 **Status tracking** — see staged, modified, untracked, and deleted files
 - 📜 **Commit history** — view linear commit log
+- 📸 **Snapshot listing** — view all snapshots with metadata
+- 📂 **File tracking** — see all files with their status
 - 🐚 **Interactive shell** — REPL mode for faster workflows
 - 🚀 **Git migration** — export your TNT repo to a real Git repository
 - 🙈 **Ignore patterns** — `.tntignore` file support
+- 🔄 **Auto-updates** — check for and install updates
 
 ## Installation
 
+### From npm (Recommended)
+
+```bash
+# Install globally with npm
+npm install -g @grenishrai/tnt
+
+# Or with bun
+bun install -g @grenishrai/tnt
+```
+
+### From Source
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/tnt.git
+git clone https://github.com/grenishrai/tnt.git
 cd tnt
 
 # Install dependencies
@@ -44,7 +59,7 @@ bun install
 # Build the project
 bun run build
 
-# Link globally (optional)
+# Link globally
 bun link
 ```
 
@@ -66,6 +81,9 @@ tnt stats
 
 # View history
 tnt log
+
+# List all snapshots
+tnt ls
 ```
 
 ## Commands
@@ -76,21 +94,29 @@ tnt log
 | `stage` | Stage files for commit | `tnt stage <files...>` |
 | `summ` | Commit with a message | `tnt summ <message>` |
 | `stats` | Show repository status | `tnt stats` |
+| `track` | Show all files with status | `tnt track` |
 | `branch` | List or create branches | `tnt branch [name]` |
 | `checkout` | Switch branches | `tnt checkout <branch>` |
+| `delete` | Delete a branch | `tnt delete <branch>` |
 | `log` | Show commit history | `tnt log` |
+| `ls` | List all snapshots | `tnt ls [-v] [-n <count>] [id]` |
 | `merge` | Merge branches | `tnt -m <target> -u <source>` |
 | `migrate` | Migrate to Git | `tnt migrate -git` |
+| `blast` | Remove all TNT configuration | `tnt blast --confirm` |
 | `shell` | Open interactive shell | `tnt shell` |
+| `upgrade` | Check for updates | `tnt upgrade` |
 | `help` | Show help | `tnt help [command]` |
 
 ### Flags
 
 | Flag | Description |
 |------|-------------|
+| `-v, --version` | Show version |
+| `-h, --help` | Show help |
 | `-c` | Create branch |
 | `-co` | Checkout branch |
 | `-cnc` | Create and checkout branch |
+| `-d` | Delete branch |
 | `-m -u` | Merge branches |
 
 ## Branching
@@ -107,7 +133,44 @@ tnt checkout feature/awesome
 
 # Create and switch in one command
 tnt -cnc feature/quick
+
+# Delete a branch
+tnt delete feature/old
+tnt -d feature/old
 ```
+
+## Snapshots
+
+List all snapshots (commits) with their metadata:
+
+```bash
+# Compact view
+tnt ls
+
+# Verbose view with more details
+tnt ls -v
+
+# Show only last 5 snapshots
+tnt ls -n 5
+
+# View specific snapshot details
+tnt ls <snapshot-id>
+```
+
+## File Tracking
+
+See all files in your repository with their status:
+
+```bash
+tnt track
+```
+
+Status indicators:
+- `✓` Tracked — file is committed and unchanged
+- `M` Modified — file has been modified but not staged
+- `+` Staged — file is staged for the next commit
+- `?` Untracked — file is not tracked by TNT
+- `D` Deleted — file was tracked but has been deleted
 
 ## Merging
 
@@ -129,7 +192,7 @@ tnt shell
 The shell provides:
 - Command aliases (`add` → `stage`, `commit` → `summ`, `st` → `stats`)
 - Branch name in prompt
-- Tab completion for commands
+- Quick navigation
 
 ## .tntignore
 
@@ -179,6 +242,31 @@ This will:
 2. Replay all TNT commits preserving timestamps and messages
 3. Create all branches
 4. Backup `.tnt/` to `.tnt.bak/`
+
+## Removing TNT
+
+To completely remove TNT configuration from a project:
+
+```bash
+# Preview what will be deleted
+tnt blast
+
+# Confirm and delete
+tnt blast --confirm
+```
+
+## Updates
+
+Check for and install updates:
+
+```bash
+# Check for updates
+tnt upgrade
+
+# Check current version
+tnt -v
+tnt --version
+```
 
 ## Development
 
