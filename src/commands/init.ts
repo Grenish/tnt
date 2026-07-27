@@ -76,12 +76,11 @@ export function init() {
   }
 
   fs.mkdirSync(path.join(tntDir, "refs", "heads"), { recursive: true });
-  fs.mkdirSync(path.join(tntDir, "commits"), { recursive: true });
   fs.mkdirSync(path.join(tntDir, "objects"), { recursive: true });
 
   fs.writeFileSync(path.join(tntDir, "HEAD"), "ref: refs/heads/main");
-
   fs.writeFileSync(path.join(tntDir, "refs", "heads", "main"), "");
+  fs.writeFileSync(path.join(tntDir, "format"), "2\n");
 
   fs.writeFileSync(
     path.join(tntDir, "index.json"),
@@ -93,5 +92,5 @@ export function init() {
     fs.writeFileSync(tntIgnorePath, DEFAULT_TNTIGNORE);
   }
 
-  console.log("Initialized empty TNT repository");
+  console.log("Initialized empty TNT repository (format 2)");
 }
