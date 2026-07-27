@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { parseArgs } from "./cli/parse";
+import { setExplain } from "./utils/objects";
 import { init } from "./commands/init";
 import { stage } from "./commands/stage";
 import { summ } from "./commands/summ";
@@ -17,10 +18,19 @@ import { upgrade } from "./commands/upgrade";
 import { blast } from "./commands/blast";
 import { list } from "./commands/list";
 import { track } from "./commands/track";
+import { catFile } from "./commands/cat-file";
+import { lsTree } from "./commands/ls-tree";
+import { revParse } from "./commands/rev-parse";
+import { graph } from "./commands/graph";
+import { convert } from "./commands/convert";
+import { diffCommand } from "./commands/diff";
+import { stashCommand } from "./commands/stash";
+import { resetCommand } from "./commands/reset";
 
-const { action, target, args, mergeTarget, mergeUpcoming } = parseArgs(
-  process.argv,
-);
+const { action, target, args, mergeTarget, mergeUpcoming, explain } =
+  parseArgs(process.argv);
+
+setExplain(!!explain);
 
 switch (action) {
   case "init":
@@ -28,15 +38,27 @@ switch (action) {
     break;
 
   case "stage":
-    stage(process.argv.slice(3));
+    stage(args ?? []);
     break;
 
   case "summ":
-    summ(target);
+    summ(target, { amend: !!args?.includes("--amend") });
     break;
 
   case "stats":
-    stats();
+    stats(args ?? []);
+    break;
+
+  case "diff":
+    diffCommand(args ?? []);
+    break;
+
+  case "stash":
+    stashCommand(args ?? []);
+    break;
+
+  case "reset":
+    resetCommand(args ?? []);
     break;
 
   case "branch":
@@ -99,6 +121,26 @@ switch (action) {
 
   case "track":
     track();
+    break;
+
+  case "cat-file":
+    catFile(args ?? []);
+    break;
+
+  case "ls-tree":
+    lsTree(target);
+    break;
+
+  case "rev-parse":
+    revParse(target);
+    break;
+
+  case "graph":
+    graph();
+    break;
+
+  case "convert":
+    convert();
     break;
 
   default:
