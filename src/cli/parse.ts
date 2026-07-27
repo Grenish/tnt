@@ -1,58 +1,126 @@
-export function parseArgs(argv: string[]): {
+export interface ParsedArgs {
   action: string;
   target?: string;
   args?: string[];
   mergeTarget?: string;
   mergeUpcoming?: string;
-} {
-  const args = argv.slice(2);
+  explain?: boolean;
+}
+
+export function parseArgs(argv: string[]): ParsedArgs {
+  const raw = argv.slice(2);
+
+  let explain = false;
+  const args = raw.filter((a) => {
+    if (a === "--explain") {
+      explain = true;
+      return false;
+    }
+    return true;
+  });
 
   if (args.length === 0) {
-    return { action: "help" };
+    return { action: "help", explain };
   }
 
   const [first, second] = args;
 
   if (first && first.startsWith("-")) {
-    return parseFlag(first, second, args);
+    return { ...parseFlag(first, second, args), explain };
   }
 
-  // Handle "migrate -git" as a special case
   if (first === "migrate") {
-    return { action: "migrate", target: second };
+    return { action: "migrate", target: second, explain };
   }
 
-  // Handle upgrade command
   if (first === "upgrade") {
-    return { action: "upgrade" };
+    return { action: "upgrade", explain };
   }
 
-  // Handle version command
   if (first === "version") {
-    return { action: "version" };
+    return { action: "version", explain };
   }
 
-  // Handle delete command
   if (first === "delete") {
-    return { action: "delete-branch", target: second };
+    return { action: "delete-branch", target: second, explain };
   }
 
-  // Handle ls/list command with additional args
   if (first === "ls" || first === "list") {
-    return { action: "list", args: args.slice(1) };
+    return { action: "list", args: args.slice(1), explain };
+  }
+
+  if (first === "stage") {
+    return { action: "stage", args: args.slice(1), explain };
+  }
+
+  if (first === "diff") {
+    return { action: "diff", args: args.slice(1), explain };
+  }
+
+  if (first === "stats") {
+    return { action: "stats", args: args.slice(1), explain };
+  }
+
+  if (first === "cat-file") {
+    return { action: "cat-file", args: args.slice(1), explain };
+  }
+
+  if (first === "ls-tree") {
+    return { action: "ls-tree", target: second, explain };
+  }
+
+  if (first === "rev-parse") {
+    return { action: "rev-parse", target: second, explain };
+  }
+
+  if (first === "graph") {
+    return { action: "graph", explain };
+  }
+
+  if (first === "convert") {
+    return { action: "convert", explain };
+  }
+
+  // summ may receive multi-word message + optional --amend
+  if (first === "summ") {
+    const rest = args.slice(1);
+    const amend = rest.includes("--amend");
+    const message =
+      rest.filter((a) => a !== "--amend").join(" ") || undefined;
+    return {
+      action: "summ",
+      target: message,
+      args: amend ? ["--amend"] : [],
+      explain,
+    };
+  }
+
+  // alias: tnt amend [message]
+  if (first === "amend") {
+    return {
+      action: "summ",
+      target: args.slice(1).join(" ") || undefined,
+      args: ["--amend"],
+      explain,
+    };
+  }
+
+  if (first === "stash") {
+    return { action: "stash", args: args.slice(1), explain };
+  }
+
+  if (first === "reset") {
+    return { action: "reset", args: args.slice(1), explain };
   }
 
   return {
     action: first ?? "help",
     target: second,
+    explain,
   };
 }
 
-function parseMergeArgs(args: string[]): {
-  action: string;
-  mergeTarget?: string;
-  mergeUpcoming?: string;
-} {
+function parseMergeArgs(args: string[]): ParsedArgs {
   let mergeTarget: string | undefined;
   let mergeUpcoming: string | undefined;
 
@@ -76,13 +144,7 @@ function parseFlag(
   flag: string,
   target?: string,
   allArgs?: string[],
-): {
-  action: string;
-  target?: string;
-  args?: string[];
-  mergeTarget?: string;
-  mergeUpcoming?: string;
-} {
+): ParsedArgs {
   switch (flag) {
     case "-c":
       return { action: "branch-create", target };
