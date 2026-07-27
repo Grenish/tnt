@@ -6,6 +6,7 @@ import {
   storeBlob,
   parseIgnorePatterns,
   shouldIgnore,
+  explain,
 } from "../utils/objects";
 
 export interface StagedFile {
@@ -17,7 +18,11 @@ export interface Index {
   files: StagedFile[];
 }
 
-export function stage(inputs: string[]) {
+export interface StageOptions {
+  explain?: boolean;
+}
+
+export function stage(inputs: string[], _options: StageOptions = {}) {
   const cwd = process.cwd();
   const tntDir = getTntDir(cwd);
   const indexPath = path.join(tntDir, "index.json");
@@ -29,7 +34,9 @@ export function stage(inputs: string[]) {
 
   const index: Index = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
 
-  const filesToAdd = resolveFiles(inputs, cwd);
+  // Strip flags that may have leaked into path args
+  const paths = inputs.filter((a) => a !== "--explain");
+  const filesToAdd = resolveFiles(paths, cwd);
 
   let stagedCount = 0;
 
@@ -38,20 +45,21 @@ export function stage(inputs: string[]) {
     const content = fs.readFileSync(fullPath, "utf-8");
     const hash = storeBlob(content, cwd);
 
-    // Check if file already staged with same hash
     const existingIndex = index.files.findIndex((f) => f.path === file);
 
     if (existingIndex >= 0) {
-      // Update hash if file changed
       const existingFile = index.files[existingIndex];
       if (existingFile && existingFile.hash !== hash) {
         existingFile.hash = hash;
         stagedCount++;
+        explain(`updated index ${file} → ${hash}`);
+      } else {
+        explain(`unchanged ${file} (${hash})`);
       }
     } else {
-      // Add new file
       index.files.push({ path: file, hash });
       stagedCount++;
+      explain(`staged ${file} → ${hash}`);
     }
   }
 
@@ -71,7 +79,6 @@ function resolveFiles(inputs: string[], cwd: string): string[] {
     const stat = fs.statSync(fullPath);
     const relativePath = path.relative(cwd, fullPath);
 
-    // Check if this path should be ignored
     if (shouldIgnore(relativePath, patterns)) {
       continue;
     }
@@ -99,7 +106,6 @@ function resolveDirectory(
     const entryPath = path.join(dir, entry);
     const relativePath = path.relative(cwd, entryPath);
 
-    // Check if this path should be ignored
     if (shouldIgnore(relativePath, patterns)) {
       continue;
     }
