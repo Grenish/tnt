@@ -10,8 +10,10 @@ import {
   collectFiles,
   hashContent,
 } from "../utils/objects";
-import type { FileEntry } from "../utils/objects";
+import { computeLineDiff } from "../utils/diff";
+import type { FileDiff } from "../utils/diff";
 import type { Index } from "./stage";
+import { printWorkingTreePatches } from "./diff";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -21,15 +23,14 @@ const RED = "\x1b[31m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 
-interface FileDiff {
-  added: number;
-  removed: number;
-}
-
-export function stats() {
+export function stats(rawArgs: string[] = []) {
   const cwd = process.cwd();
   const tntDir = getTntDir(cwd);
   const indexPath = path.join(tntDir, "index.json");
+  const showPatch =
+    rawArgs.includes("--patch") ||
+    rawArgs.includes("-p") ||
+    rawArgs.includes("--diff");
 
   if (!isRepo(cwd)) {
     console.log("tnt: not a repository");
@@ -97,7 +98,7 @@ export function stats() {
       });
     } else if (stagedHash !== committedHash) {
       // Modified file
-      const diff = computeDiff(
+      const diff = computeLineDiff(
         getBlob(committedHash, cwd) || "",
         getBlob(stagedHash, cwd) || "",
       );
@@ -118,14 +119,14 @@ export function stats() {
       // File is staged - check if working copy differs from staged
       if (currentHash !== stagedHash) {
         const stagedContent = getBlob(stagedHash, cwd) || "";
-        const diff = computeDiff(stagedContent, currentContent);
+        const diff = computeLineDiff(stagedContent, currentContent);
         modified.push({ path: filePath, diff });
       }
     } else if (committedHash) {
       // File is committed but not staged - check if modified
       if (currentHash !== committedHash) {
         const committedContent = getBlob(committedHash, cwd) || "";
-        const diff = computeDiff(committedContent, currentContent);
+        const diff = computeLineDiff(committedContent, currentContent);
         modified.push({ path: filePath, diff });
       }
     } else {
@@ -193,48 +194,12 @@ export function stats() {
   }
 
   console.log();
-}
 
-/**
- * Compute a simple line-based diff between two strings
- */
-function computeDiff(oldContent: string, newContent: string): FileDiff {
-  const oldLines = oldContent.split("\n");
-  const newLines = newContent.split("\n");
-
-  // Simple diff: count added and removed lines using LCS approach
-  const oldSet = new Map<string, number>();
-  const newSet = new Map<string, number>();
-
-  // Count occurrences of each line
-  for (const line of oldLines) {
-    oldSet.set(line, (oldSet.get(line) || 0) + 1);
+  if (showPatch && (modified.length > 0 || deleted.length > 0)) {
+    printWorkingTreePatches(cwd);
+  } else if (showPatch) {
+    console.log(
+      `${DIM}(no unstaged changes to show; try ${RESET}tnt diff --staged${DIM})${RESET}\n`,
+    );
   }
-
-  for (const line of newLines) {
-    newSet.set(line, (newSet.get(line) || 0) + 1);
-  }
-
-  let added = 0;
-  let removed = 0;
-
-  // Count removed lines (in old but not in new, or fewer occurrences in new)
-  for (const [line, oldCount] of oldSet) {
-    const newCount = newSet.get(line) || 0;
-
-    if (newCount < oldCount) {
-      removed += oldCount - newCount;
-    }
-  }
-
-  // Count added lines (in new but not in old, or more occurrences in new)
-  for (const [line, newCount] of newSet) {
-    const oldCount = oldSet.get(line) || 0;
-
-    if (newCount > oldCount) {
-      added += newCount - oldCount;
-    }
-  }
-
-  return { added, removed };
 }
