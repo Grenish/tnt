@@ -9,7 +9,15 @@ import { log } from "./log";
 import { migrate } from "./migrate";
 import { merge } from "./merge";
 import { help } from "./help";
-import { getCurrentBranch, isRepo } from "../utils/objects";
+import { catFile } from "./cat-file";
+import { lsTree } from "./ls-tree";
+import { revParse } from "./rev-parse";
+import { graph } from "./graph";
+import { convert } from "./convert";
+import { diffCommand } from "./diff";
+import { stashCommand } from "./stash";
+import { resetCommand } from "./reset";
+import { getCurrentBranch, isRepo, setExplain } from "../utils/objects";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -112,14 +120,35 @@ function executeCommand(cmd: string, args: string[]): boolean {
       return true;
 
     case "summ":
-    case "commit":
-      summ(args.join(" ") || undefined);
+    case "commit": {
+      const amend = args.includes("--amend");
+      const message =
+        args.filter((a) => a !== "--amend").join(" ") || undefined;
+      summ(message, { amend });
+      return true;
+    }
+
+    case "amend":
+      summ(args.join(" ") || undefined, { amend: true });
       return true;
 
     case "stats":
     case "status":
     case "st":
-      stats();
+      stats(args);
+      return true;
+
+    case "diff":
+    case "d":
+      diffCommand(args);
+      return true;
+
+    case "stash":
+      stashCommand(args);
+      return true;
+
+    case "reset":
+      resetCommand(args);
       return true;
 
     case "branch":
@@ -153,6 +182,34 @@ function executeCommand(cmd: string, args: string[]): boolean {
       }
       return true;
 
+    case "cat-file":
+      catFile(args);
+      return true;
+
+    case "ls-tree":
+      lsTree(args[0]);
+      return true;
+
+    case "rev-parse":
+      revParse(args[0]);
+      return true;
+
+    case "graph":
+      graph();
+      return true;
+
+    case "convert":
+      convert();
+      return true;
+
+    case "explain":
+      // toggle learner narration for subsequent shell commands
+      setExplain(args[0] !== "off");
+      console.log(
+        `${DIM}explain ${args[0] === "off" ? "off" : "on"}${RESET}`,
+      );
+      return true;
+
     case "clear":
     case "cls":
       console.clear();
@@ -178,7 +235,11 @@ ${BOLD}Available Commands:${RESET}
   ${CYAN}init${RESET}              Initialize a new repository
   ${CYAN}stage${RESET} <files>     Stage files for commit ${DIM}(alias: add)${RESET}
   ${CYAN}summ${RESET} <message>    Commit with a message ${DIM}(alias: commit)${RESET}
+  ${CYAN}amend${RESET} [message]   Amend last commit ${DIM}(or summ --amend)${RESET}
   ${CYAN}stats${RESET}             Show repository status ${DIM}(alias: status, st)${RESET}
+  ${CYAN}diff${RESET} [opts]       Show unified diffs ${DIM}(alias: d)${RESET}
+  ${CYAN}stash${RESET} […]         Park / restore WIP
+  ${CYAN}reset --soft${RESET} <r>  Move HEAD, keep worktree
   ${CYAN}branch${RESET} [name]     List or create branches ${DIM}(alias: br)${RESET}
   ${CYAN}checkout${RESET} <branch> Switch branches ${DIM}(alias: co)${RESET}
   ${CYAN}log${RESET}               Show commit history
