@@ -19,8 +19,30 @@ const BANNER = `
 const commands: Record<string, { desc: string; usage: string }> = {
   init: { desc: "Initialize a new repository", usage: "tnt init" },
   stage: { desc: "Stage files for commit", usage: "tnt stage <files...>" },
-  summ: { desc: "Commit with a message", usage: "tnt summ <message>" },
-  stats: { desc: "Show repository status", usage: "tnt stats" },
+  summ: {
+    desc: "Commit with a message",
+    usage: "tnt summ <message> | tnt summ --amend [message]",
+  },
+  amend: {
+    desc: "Amend the last commit",
+    usage: "tnt amend [message]",
+  },
+  stats: {
+    desc: "Show repository status",
+    usage: "tnt stats [--patch|-p]",
+  },
+  diff: {
+    desc: "Show unified diffs",
+    usage: "tnt diff [--staged] [--stat] [path...]",
+  },
+  stash: {
+    desc: "Park WIP changes",
+    usage: "tnt stash [push|list|apply|pop|drop|show|clear]",
+  },
+  reset: {
+    desc: "Move HEAD (soft only)",
+    usage: "tnt reset --soft <rev>",
+  },
   branch: { desc: "List or create branches", usage: "tnt branch [name]" },
   checkout: { desc: "Switch branches", usage: "tnt checkout <branch>" },
   delete: { desc: "Delete a branch", usage: "tnt delete <branch>" },
@@ -29,6 +51,11 @@ const commands: Record<string, { desc: string; usage: string }> = {
   track: { desc: "Show all files with status", usage: "tnt track" },
   merge: { desc: "Merge branches", usage: "tnt -m <target> -u <upcoming>" },
   migrate: { desc: "Migrate to Git", usage: "tnt migrate -git" },
+  convert: { desc: "Convert legacy v1 repo to format 2", usage: "tnt convert" },
+  "cat-file": { desc: "Inspect an object", usage: "tnt cat-file [-t|-p] <hash>" },
+  "ls-tree": { desc: "List a tree", usage: "tnt ls-tree [tree|commit|HEAD]" },
+  "rev-parse": { desc: "Resolve a revision to a commit id", usage: "tnt rev-parse <rev>" },
+  graph: { desc: "Show commit parent graph", usage: "tnt graph" },
   blast: { desc: "Remove all TNT configuration", usage: "tnt blast --confirm" },
   shell: { desc: "Open interactive shell", usage: "tnt shell" },
   upgrade: { desc: "Check for updates", usage: "tnt upgrade" },
@@ -43,6 +70,7 @@ const flags: Record<string, string> = {
   "-cnc": "Create and checkout branch",
   "-d": "Delete branch",
   "-m -u": "Merge branches",
+  "--explain": "Narrate object-store operations (learner mode)",
 };
 
 function printGeneralHelp() {
@@ -69,7 +97,10 @@ function printGeneralHelp() {
 }
 
 function openManual(commandName: string) {
-  const manual = manuals[commandName as keyof typeof manuals];
+  // allow "cat-file" → catfile export keys
+  const key = commandName.replace(/-/g, "") as keyof typeof manuals;
+  const manual =
+    manuals[commandName as keyof typeof manuals] ?? manuals[key];
 
   if (!manual) {
     console.log(`\n${YELLOW}Unknown command: ${commandName}${RESET}`);
