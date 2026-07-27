@@ -1,7 +1,15 @@
 import fs from "fs";
 import path from "path";
 import * as readline from "readline";
-import { getTntDir, isRepo, getCommit, getBlob } from "../utils/objects";
+import {
+  getTntDir,
+  isRepo,
+  getCommit,
+  getBlob,
+  writeTree,
+  writeCommit,
+  writeFormatVersion,
+} from "../utils/objects";
 import type { Commit, FileEntry } from "../utils/objects";
 
 const BOLD = "\x1b[1m";
@@ -160,57 +168,40 @@ function performMerge(
   cwd: string,
 ) {
   const tntDir = getTntDir(cwd);
-  const commitsDir = path.join(tntDir, "commits");
   const targetBranchPath = path.join(tntDir, "refs", "heads", targetBranch);
 
   // Build merged file list
   const mergedFiles: FileEntry[] = [];
 
-  // Add unchanged files (same in both)
   for (const file of analysis.unchanged) {
     mergedFiles.push(file);
   }
-
-  // Add new files from source
   for (const file of analysis.added) {
     mergedFiles.push(file);
   }
-
-  // Add updated files (source version wins)
   for (const file of analysis.updated) {
     mergedFiles.push(file);
   }
-
-  // Keep files that only exist in target
   for (const file of analysis.kept) {
     mergedFiles.push(file);
   }
 
-  // Create merge commit
-  const commitId = Date.now().toString();
   const targetCommitId = fs.existsSync(targetBranchPath)
     ? fs.readFileSync(targetBranchPath, "utf-8").trim()
     : "";
 
-  const mergeCommit: Commit = {
-    id: commitId,
-    timestamp: new Date().toISOString(),
-    message: `Merge branch '${sourceBranch}' into ${targetBranch}`,
-    files: mergedFiles,
-    parent: targetCommitId || undefined,
-  };
-
-  // Save commit
-  if (!fs.existsSync(commitsDir)) {
-    fs.mkdirSync(commitsDir, { recursive: true });
-  }
-
-  fs.writeFileSync(
-    path.join(commitsDir, `${commitId}.json`),
-    JSON.stringify(mergeCommit, null, 2),
+  const message = `Merge branch '${sourceBranch}' into ${targetBranch}`;
+  const tree = writeTree(mergedFiles, cwd);
+  const commitId = writeCommit(
+    {
+      tree,
+      parent: targetCommitId || undefined,
+      message,
+    },
+    cwd,
   );
+  writeFormatVersion(2, cwd);
 
-  // Update target branch to point to merge commit
   fs.writeFileSync(targetBranchPath, commitId);
 
   // Restore merged files to working directory
@@ -229,7 +220,7 @@ function performMerge(
     }
   }
 
-  return mergeCommit;
+  return getCommit(commitId, cwd)!;
 }
 
 export async function merge(targetBranch?: string, sourceBranch?: string) {
