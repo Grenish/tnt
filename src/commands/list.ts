@@ -7,6 +7,7 @@ import {
   getCurrentCommit,
   getCommit,
   getBlob,
+  listAllCommits,
 } from "../utils/objects";
 import type { Commit } from "../utils/objects";
 
@@ -24,39 +25,10 @@ interface ListOptions {
 }
 
 /**
- * Get all commits from the repository (all branches)
+ * Get all commits from the repository (all branches / object store)
  */
 function getAllCommits(cwd: string): Commit[] {
-  const tntDir = getTntDir(cwd);
-  const commitsDir = path.join(tntDir, "commits");
-
-  if (!fs.existsSync(commitsDir)) {
-    return [];
-  }
-
-  const commitFiles = fs
-    .readdirSync(commitsDir)
-    .filter((f) => f.endsWith(".json"));
-  const commits: Commit[] = [];
-
-  for (const file of commitFiles) {
-    try {
-      const content = fs.readFileSync(path.join(commitsDir, file), "utf-8");
-      const commit = JSON.parse(content) as Commit;
-      commits.push(commit);
-    } catch {
-      // Skip invalid commit files
-    }
-  }
-
-  // Sort by timestamp (newest first)
-  commits.sort((a, b) => {
-    const timeA = new Date(a.timestamp).getTime();
-    const timeB = new Date(b.timestamp).getTime();
-    return timeB - timeA;
-  });
-
-  return commits;
+  return listAllCommits(cwd);
 }
 
 /**
