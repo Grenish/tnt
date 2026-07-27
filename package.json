@@ -13,6 +13,8 @@
   "scripts": {
     "dev": "bun src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target node",
+    "test": "bun test",
+    "bench": "bun benchmarks/status-commit.ts",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
