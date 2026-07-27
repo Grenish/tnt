@@ -75,6 +75,12 @@ function printCommit(commit: Commit, branchName: string | null) {
   console.log(`${YELLOW}commit ${commit.id}${RESET}`);
   console.log(`${DIM}branch:${RESET}  ${branchName || "detached"}`);
   console.log(`${DIM}message:${RESET} ${commit.message}`);
+  if (commit.tree) {
+    console.log(`${DIM}tree:${RESET}    ${commit.tree}`);
+  }
+  if (commit.parent) {
+    console.log(`${DIM}parent:${RESET}  ${commit.parent}`);
+  }
   console.log(`${DIM}files:${RESET}   ${commit.files.length}`);
   console.log(`${DIM}time:${RESET}    ${formattedTime}`);
 }
